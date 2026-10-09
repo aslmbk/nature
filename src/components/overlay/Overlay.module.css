@@ -1,0 +1,68 @@
+/*
+ * Overlay root: tokens, reduced-motion switch, pointer policy.
+ * The overlay never blocks scrolling: everything is pointer-events: none except
+ * links, buttons and form fields of the stage that is currently visible.
+ */
+.root {
+  position: relative;
+  z-index: 1;
+  pointer-events: none;
+  color: var(--ov-fg);
+  font-family: var(--ov-font-sans);
+
+  /* 1 = full motion; 0 = fade only (prefers-reduced-motion or ?motion=reduce) */
+  --motion: 1;
+
+  /* type scale, tuned at 1440×1020 where --u = 14.4px */
+  --u: min(1vw, 1.4118vh);
+  --fs-hero: clamp(40px, calc(5.45 * var(--u)), 104px);
+  --fs-title: clamp(36px, calc(5 * var(--u)), 96px);
+  --fs-body: clamp(15px, calc(1.2 * var(--u)), 20px);
+  --fs-small: clamp(13px, calc(1.04 * var(--u)), 17px);
+  --fs-eyebrow: clamp(11px, calc(0.97 * var(--u)), 15px);
+  --fs-card-title: clamp(21px, calc(2.2 * var(--u)), 38px);
+  --ov-radius: clamp(18px, calc(1.7 * var(--u)), 28px);
+  --ov-gutter: clamp(16px, 2.8vw, 56px);
+}
+
+/* phones: below ≈ 375 px the headlines follow the width, so their longest lines
+   ("one season at a time.", "your study follow yours.") keep their breaks instead of
+   leaving one word on a line of its own; 40 / 36 px from 375 px up as before */
+@media (max-width: 699.98px) {
+  .root {
+    --fs-hero: clamp(30px, calc((100vw - 2 * var(--ov-gutter)) / 8.5), 40px);
+    --fs-title: clamp(28px, calc((100vw - 2 * var(--ov-gutter)) / 9.5), 36px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .root {
+    --motion: 0;
+  }
+}
+
+/* ?motion=reduce|full overrides the OS setting. The attribute is on <html>, set before the
+   first paint by a small script that Overlay.tsx inserts into the server HTML's head
+   (useServerInsertedHTML), so the scroll-driven animations are created with the right
+   --motion (a running compositor animation keeps the value it started with). */
+:global(html[data-motion="reduce"]) .root {
+  --motion: 0;
+}
+
+:global(html[data-motion="full"]) .root {
+  --motion: 1;
+}
+
+.root a,
+.root button,
+.root input,
+.root label,
+.root summary {
+  pointer-events: auto;
+}
+
+.root :focus-visible {
+  outline: 2px solid var(--ov-accent);
+  outline-offset: 3px;
+  border-radius: 6px;
+}

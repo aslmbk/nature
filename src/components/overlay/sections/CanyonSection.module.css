@@ -1,0 +1,385 @@
+/* frame 06 (1440×1020): eyebrow top ≈ 120 px, paragraph 3 lines ≈ 520 px wide,
+   three 421 × 520 px cards from y = 452, 24 px apart. Sizes in --u (14.4 px there). */
+
+.column {
+  /* never under the top bar's pill (86 px) on short landscape screens */
+  top: max(11.8%, 98px);
+}
+
+.column .title {
+  margin-top: calc(1.25 * var(--u));
+}
+
+.lead {
+  max-width: clamp(300px, calc(36.5 * var(--u)), 600px);
+}
+
+.cards {
+  position: absolute;
+  top: 44.3%;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: calc(1.67 * var(--u));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* .cards > .card outranks the shared .glass rules regardless of stylesheet order */
+.cards > .card {
+  display: flex;
+  flex-direction: column;
+  width: calc(29.24 * var(--u));
+  height: calc(36.1 * var(--u));
+  padding: calc(2.1 * var(--u));
+  border-radius: calc(1.95 * var(--u));
+  overflow: hidden;
+}
+
+/* tinted glass instead of the reference's photos; the blurred canyon shows through */
+.card.tintWarm {
+  background:
+    radial-gradient(130% 75% at 30% 0%, rgba(214, 200, 208, 0.42), transparent 64%),
+    linear-gradient(170deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04) 62%, rgba(0, 0, 0, 0.16));
+}
+
+.card.tintGreen {
+  background:
+    radial-gradient(120% 85% at 70% 20%, rgba(104, 156, 60, 0.5), transparent 66%),
+    linear-gradient(170deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04) 62%, rgba(0, 0, 0, 0.16));
+}
+
+.card.tintCool {
+  background:
+    radial-gradient(130% 75% at 60% 10%, rgba(176, 194, 184, 0.42), transparent 64%),
+    linear-gradient(170deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04) 62%, rgba(0, 0, 0, 0.16));
+}
+
+.art {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.text {
+  padding-top: calc(1.5 * var(--u));
+}
+
+.text .cardText {
+  margin-top: calc(0.85 * var(--u));
+  max-width: 30em;
+}
+
+/* ---- inner panels (no nested backdrop-filter: plain translucent fills) ------ */
+
+.panel {
+  position: absolute;
+  inset: 0 0 calc(0.4 * var(--u)) 0;
+  padding: calc(1.6 * var(--u));
+  border-radius: calc(1.5 * var(--u));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+  color: #f4f7ef;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.panelLabel {
+  margin: 0;
+  font-size: max(var(--ov-text-min), calc(1.04 * var(--u)));
+  letter-spacing: -0.01em;
+  color: rgba(244, 247, 239, 0.78);
+}
+
+.big {
+  margin: calc(0.8 * var(--u)) 0 0;
+  font-family: var(--ov-font-serif);
+  font-style: italic;
+  font-size: calc(3.1 * var(--u));
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.slash {
+  margin: 0 0.04em;
+  opacity: 0.55;
+}
+
+.caption {
+  margin: calc(0.45 * var(--u)) 0 0;
+  font-size: max(var(--ov-text-min), calc(0.8 * var(--u)));
+  color: rgba(244, 247, 239, 0.42);
+}
+
+.captionSerif {
+  font-family: var(--ov-font-serif);
+  font-style: italic;
+  font-size: max(var(--ov-text-min), calc(1.04 * var(--u)));
+  color: rgba(244, 247, 239, 0.4);
+}
+
+.dash {
+  margin-top: calc(1.5 * var(--u));
+  border-top: 1px dashed rgba(255, 255, 255, 0.26);
+}
+
+.bars {
+  position: absolute;
+  left: calc(1.6 * var(--u));
+  right: calc(1.6 * var(--u));
+  bottom: calc(1.2 * var(--u));
+  height: calc(9.6 * var(--u));
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  align-items: end;
+}
+
+.barCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: calc(0.7 * var(--u));
+  height: 100%;
+}
+
+.barCol i {
+  display: block;
+  width: calc(0.85 * var(--u));
+  height: calc(var(--h) * 7.2 * var(--u));
+  border-radius: calc(0.45 * var(--u));
+  background: linear-gradient(180deg, #ffffff, rgba(255, 255, 255, 0.16));
+}
+
+.barCol em {
+  padding-top: calc(0.5 * var(--u));
+  width: 100%;
+  border-top: 1px dashed rgba(255, 255, 255, 0.24);
+  font-style: normal;
+  font-size: max(var(--ov-text-min), calc(0.75 * var(--u)));
+  line-height: 1;
+  text-align: center;
+  color: rgba(244, 247, 239, 0.45);
+}
+
+/* card 2: chip over a white "paper" with a sparkline */
+.windowWrap {
+  position: absolute;
+  inset: 0;
+}
+
+.chip {
+  position: absolute;
+  z-index: 1;
+  top: calc(0.6 * var(--u));
+  left: 0;
+  width: calc(10.4 * var(--u));
+  padding: calc(1 * var(--u));
+  border-radius: calc(1.15 * var(--u));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(236, 241, 230, 0.8));
+  color: #161915;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.22);
+}
+
+.chipIcon {
+  display: grid;
+  place-items: center;
+  width: calc(1.9 * var(--u));
+  height: calc(1.9 * var(--u));
+  border-radius: 50%;
+  background: #9ed04a;
+  color: #ffffff;
+}
+
+.chipIcon svg {
+  width: 60%;
+  height: 60%;
+}
+
+.chipValue {
+  display: flex;
+  align-items: center;
+  gap: calc(0.3 * var(--u));
+  margin-top: calc(0.9 * var(--u));
+  font-size: calc(1.7 * var(--u));
+  font-weight: 450;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.chipArrow {
+  width: calc(1 * var(--u));
+  height: calc(0.75 * var(--u));
+}
+
+.chipNote {
+  display: block;
+  margin-top: calc(0.4 * var(--u));
+  font-size: max(var(--ov-text-min), calc(0.72 * var(--u)));
+  color: rgba(22, 25, 21, 0.45);
+}
+
+.paper {
+  position: absolute;
+  /* moves right by as much as its floored label grew on the left (≈ 3 × the growth of the
+     font size), so the label keeps its clearance from the chip; 0 at the reference size */
+  left: calc(5.3 * var(--u) + 3 * max(0px, var(--ov-text-min) - 0.7 * var(--u)));
+  top: calc(6.1 * var(--u));
+  width: calc(16.7 * var(--u));
+  height: calc(17.7 * var(--u));
+  padding: calc(1.5 * var(--u)) calc(1.3 * var(--u));
+  border-radius: calc(1.4 * var(--u));
+  background: linear-gradient(180deg, #ffffff 0%, #f3f6ef 55%, #e2edd0 100%);
+  color: #151814;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+}
+
+.paperLabel {
+  margin: 0;
+  text-align: center;
+  font-size: max(var(--ov-text-min), calc(0.7 * var(--u)));
+  color: rgba(21, 24, 20, 0.6);
+}
+
+.paperBig {
+  margin: calc(0.6 * var(--u)) 0 0;
+  text-align: center;
+  font-family: var(--ov-font-serif);
+  font-style: italic;
+  font-size: calc(2.9 * var(--u));
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.paperBig small {
+  margin-left: 0.15em;
+  font-size: 0.42em;
+  font-style: italic;
+  opacity: 0.55;
+}
+
+.spark {
+  position: absolute;
+  left: calc(1 * var(--u));
+  right: calc(1 * var(--u));
+  bottom: calc(3.4 * var(--u));
+  width: calc(100% - 2 * var(--u));
+  height: calc(4.8 * var(--u));
+  overflow: visible;
+}
+
+/* card 3: streak */
+.pill {
+  padding: calc(0.32 * var(--u)) calc(0.85 * var(--u));
+  border-radius: 99px;
+  border: 1px solid rgba(188, 235, 106, 0.75);
+  font-size: max(var(--ov-text-min), calc(0.7 * var(--u)));
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #e3f6bf;
+}
+
+.list {
+  display: grid;
+  gap: calc(0.95 * var(--u));
+  margin: calc(1.6 * var(--u)) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list li {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: calc(0.7 * var(--u));
+  font-size: max(var(--ov-text-min), calc(0.9 * var(--u)));
+  color: rgba(244, 247, 239, 0.75);
+}
+
+.list i {
+  width: calc(0.62 * var(--u));
+  height: calc(0.62 * var(--u));
+  border-radius: 50%;
+}
+
+.list b {
+  font-weight: 450;
+  color: rgba(244, 247, 239, 0.9);
+}
+
+/* ---- phones: the paragraph crosses the lit rock (top right): a soft halo behind the
+   column (shared .halo) and the brighter text tone ----------------------------- */
+
+@media (max-width: 699.98px) {
+  .column .halo {
+    display: block;
+    --halo: 0.8;
+    --halo-w: 128%;
+    --halo-y: 14%;
+    --halo-y2: 20%;
+  }
+
+  .column .lead {
+    color: var(--ov-fg-soft);
+  }
+}
+
+/* ---- narrow screens: compact stacked cards, no inner graphics ------------- */
+
+@media (max-width: 899.98px) {
+  .column {
+    top: 11%;
+  }
+
+  .cards {
+    top: auto;
+    bottom: 4%;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 0 var(--ov-gutter);
+  }
+
+  .cards > .card {
+    width: min(560px, 100%);
+    height: auto;
+    padding: 16px 18px 18px;
+    border-radius: 18px;
+  }
+
+  .art {
+    display: none;
+  }
+
+  .text {
+    padding-top: 0;
+  }
+
+  .text .cardText {
+    margin-top: 6px;
+  }
+}
+
+/* very short phones (under 600 px tall, e.g. an iPhone SE inside Safari's bars): slimmer
+   cards, so the paragraph above keeps clear of the first one */
+@media (max-width: 699.98px) and (max-height: 599.98px) {
+  .cards {
+    gap: 8px;
+  }
+
+  .cards > .card {
+    padding: 11px 16px 12px;
+  }
+
+  .text .cardText {
+    margin-top: 3px;
+  }
+}

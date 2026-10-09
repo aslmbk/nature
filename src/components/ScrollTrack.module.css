@@ -1,0 +1,17 @@
+.track {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  pointer-events: none;
+}
+
+.section {
+  /* containing block for in-section anchors of the overlay; sticky children pin here */
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.tail {
+  height: 100vh;
+}

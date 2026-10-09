@@ -1,0 +1,145 @@
+/* frame 09 (1440×1020): eyebrow centre y ≈ 249, headline 288–420, paragraph 436–505
+   (3 lines, ≈ 530 px); side cards 257 × 262 at x 76 / 1096, y 387. */
+
+.column {
+  top: 23.6%;
+}
+
+.column .title {
+  margin-top: calc(1.2 * var(--u));
+}
+
+.lead {
+  max-width: clamp(300px, calc(37 * var(--u)), 600px);
+}
+
+/* positioned slot (moved by the scroll), inner drift (moved again later) */
+.slot {
+  position: absolute;
+  top: 37.9%;
+  width: calc(17.85 * var(--u));
+}
+
+.left {
+  left: calc(5.3 * var(--u));
+}
+
+.right {
+  right: calc(6 * var(--u));
+}
+
+.drift {
+  width: 100%;
+}
+
+/* .drift > .card outranks the shared .glassDark rules regardless of stylesheet order */
+.drift > .card {
+  display: flex;
+  flex-direction: column;
+  height: calc(18.2 * var(--u));
+  padding: calc(1.9 * var(--u)) calc(1.4 * var(--u)) calc(1.5 * var(--u));
+  border-radius: calc(1.55 * var(--u));
+  border-color: rgba(255, 255, 255, 0.28);
+  overflow: hidden;
+}
+
+.card.cardLeft {
+  background:
+    radial-gradient(90% 60% at 45% 30%, rgba(120, 132, 108, 0.32), transparent 70%),
+    linear-gradient(180deg, rgba(40, 44, 38, 0.42), rgba(10, 12, 10, 0.66));
+}
+
+.card.cardRight {
+  background:
+    radial-gradient(70% 60% at 85% 18%, rgba(74, 128, 40, 0.42), transparent 70%),
+    linear-gradient(180deg, rgba(26, 30, 24, 0.5), rgba(8, 10, 8, 0.7));
+}
+
+.icon {
+  display: block;
+  width: calc(2.4 * var(--u));
+  height: calc(2.4 * var(--u));
+}
+
+.iconLime {
+  color: #c4ea4e;
+}
+
+.iconGrey {
+  color: rgba(233, 239, 224, 0.62);
+}
+
+.card .cardTitle {
+  margin-top: auto;
+  font-size: calc(1.45 * var(--u));
+}
+
+.card .cardText {
+  margin-top: calc(0.75 * var(--u));
+  font-size: max(var(--ov-text-min), calc(0.92 * var(--u)));
+  line-height: 1.42;
+}
+
+@media (max-width: 899.98px) {
+  .column {
+    top: 14%;
+  }
+
+  /* the bright loop strands cross the copy here: a soft halo behind the column (shared
+     .halo) and the brighter paragraph tone */
+  .column .halo {
+    display: block;
+    --halo: 0.66;
+    --halo-w: 118%;
+    --halo-y: 16%;
+    --halo-y2: 22%;
+  }
+
+  .column .lead {
+    color: var(--ov-fg-soft);
+  }
+
+  /* side cards become a compact pair at the bottom; no drift */
+  .slot {
+    top: auto;
+    bottom: 4%;
+    width: calc(50% - var(--ov-gutter) - 6px);
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .left {
+    left: var(--ov-gutter);
+  }
+
+  .right {
+    right: var(--ov-gutter);
+  }
+
+  .drift {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .drift > .card {
+    height: auto;
+    min-height: 0;
+    padding: 14px 14px 16px;
+    border-radius: 16px;
+  }
+
+  .icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .card .cardTitle {
+    margin-top: 18px;
+    font-size: 19px;
+  }
+
+  .card .cardText {
+    margin-top: 6px;
+    font-size: 13px;
+  }
+}

@@ -1,0 +1,152 @@
+/* frame 14 (1440×1020): giant line, cap height ≈ 165 px (≈ 227 px type) with its cap
+   top at y 135, starting at x 40; column at x 127: eyebrow y 480, headline 515–650,
+   paragraph 666–758 (4 lines, ≈ 480 px), list at 809 / 849 / 891. */
+
+.rise,
+.track {
+  position: absolute;
+  inset: 0;
+}
+
+.giant {
+  position: absolute;
+  top: 10%;
+  left: var(--ov-gutter);
+  margin: 0;
+  font-family: var(--ov-font-sans);
+  font-size: calc(15.75 * var(--u));
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+}
+
+.lime,
+.white,
+.grey {
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lime {
+  background-image: linear-gradient(90deg, #9fe02a 0%, #b7ea55 45%, #e2f6bd 100%);
+}
+
+.white {
+  background-image: linear-gradient(90deg, #f3f9ea 0%, #ffffff 45%, #a3a89e 100%);
+}
+
+.grey {
+  background-image: linear-gradient(90deg, #8a8f86 0%, #5e635b 60%, #3f433d 100%);
+}
+
+.dash {
+  display: inline-block;
+  width: 0.7em;
+  height: 0.075em;
+  margin: 0 0.06em;
+  vertical-align: 0.25em;
+  border-radius: 0.04em;
+  background: linear-gradient(90deg, #8f948b, #6a6f66);
+}
+
+.column {
+  position: absolute;
+  top: 46.3%;
+  left: calc(8.8 * var(--u));
+  width: min(calc(34 * var(--u)), calc(100% - 2 * var(--ov-gutter)));
+}
+
+.column .title {
+  margin-top: calc(1.6 * var(--u));
+}
+
+.column .lead {
+  margin-top: calc(1.35 * var(--u));
+  max-width: calc(33.5 * var(--u));
+}
+
+.points {
+  display: grid;
+  gap: calc(1.2 * var(--u));
+  margin: calc(2.6 * var(--u)) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: clamp(13px, calc(1.06 * var(--u)), 17px);
+  line-height: 1.3;
+  color: rgba(233, 239, 224, 0.78);
+}
+
+.points li {
+  position: relative;
+  padding-left: 1.15em;
+}
+
+.points li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.38em;
+  width: 0.56em;
+  height: 0.56em;
+  border-radius: 50%;
+  background: #9fdc3a;
+  box-shadow: 0 0 8px rgba(159, 220, 58, 0.55);
+}
+
+@media (max-width: 899.98px) {
+  /* the branch cards sit at the bottom here, right where the line rises in: it fades in
+     once they are nearly gone (they fade 36.9–37.25 s, BranchSection); this overrides the
+     inline entrance window, not the reduced-motion one */
+  .giant {
+    --a: 37.2 !important;
+    --b: 37.55 !important;
+  }
+
+  .column {
+    top: auto;
+    bottom: 6%;
+    left: var(--ov-gutter);
+    width: auto;
+    right: var(--ov-gutter);
+  }
+
+  .column .lead {
+    max-width: 520px;
+  }
+}
+
+/* phones: the emblem rock fills the middle of the frame (≈ 40–80 % of the height, the seed
+   at ≈ 56–70 %), so the column splits around it: eyebrow + headline right under the giant
+   line, paragraph + list at the bottom (DOM and reading order unchanged) */
+@media (max-width: 699.98px) {
+  .column {
+    top: calc(10% + 15.75 * var(--u) + 16px);
+    bottom: 3.5%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .column .lead {
+    margin-top: auto;
+  }
+
+  .points {
+    margin-top: 14px;
+    gap: 8px;
+  }
+}
+
+/* short phones (< 760 px tall): the seed sits at ≈ 56–74 % of the frame and paragraph +
+   list together would reach it, so the paragraph stays under the headline and only the
+   list goes to the bottom */
+@media (max-width: 699.98px) and (max-height: 759.98px) {
+  .column .lead {
+    margin-top: 12px;
+  }
+
+  .points {
+    margin-top: auto;
+  }
+}

@@ -1,0 +1,490 @@
+/*
+ * Scroll-driven motion for the overlay. All ranges are video seconds (the engine's t):
+ *
+ *   native   (animation-timeline supported): every animation runs on
+ *            `scroll(root block)` with `animation-range: <t0/59 %> <t1/59 %>`, i.e. the
+ *            same t = scrollY / maxScroll × 59 mapping the engine uses. No JavaScript.
+ *   fallback (`[data-overlay-fallback]` on the overlay root, set by Overlay.tsx when
+ *            the browser lacks scroll timelines): the same keyframes, paused, with
+ *            `animation-delay = (t0 − --t) / (t1 − t0) · 1s`; Overlay.tsx writes `--t`
+ *            from a passive scroll listener throttled to one requestAnimationFrame.
+ *   neither  (no JS and no support): nothing is animated, content is plainly visible.
+ *
+ * Inputs (custom properties):
+ *   root:    --T (59), --motion (1 | 0 for reduced motion: fade only), --t (fallback)
+ *   .stage:  --p0 --p1 presence window, --pfill; --o0 --o1 --oshift --oease exit slide;
+ *            --f0 --f1 exit fade, --rf0 --rf1 the same under reduced motion (inherited by
+ *            every piece that fades out)
+ *   items:   --a --b own window (--ra --rb under reduced motion); --rise (px), --blur (px),
+ *            --ease; --xf0 --xf1: the exit fade of this piece, written by Overlay.tsx
+ *            (exitFades.ts) when the piece would otherwise slide into the top bar's row
+ *   .scrub:  --x0 --y0 --s0 --r0 --op0 → --x1 --y1 --s1 --r1 --op1 (transform + opacity)
+ *   .move:   the same without opacity (safe on ancestors of glass)
+ *   .inoutRecede: entrance [--a, --b] + recede (scale to --rs and fade) [--f0, --f1]
+ *
+ * Glass rule: never put opacity / filter / mask on an ancestor of a backdrop-filter
+ * element (it would become the backdrop root and the glass would stop blurring the
+ * canvas). Every piece fades itself (.out / .inout / .inoutSoft / …); stages, layers and
+ * text columns only move.
+ */
+
+.stage {
+  position: sticky;
+  top: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100svh;
+  /* = −height − hold (--hold from the Stage component, a length): the stage stays
+     pinned until its section ends + hold, then scrolls away (already invisible) */
+  margin-bottom: calc(-100vh - var(--hold, 0px));
+  margin-bottom: calc(-100svh - var(--hold, 0px));
+  overflow: clip;
+}
+
+/* full-stage layer; .shift adds the exit slide */
+.layer {
+  position: absolute;
+  inset: 0;
+}
+
+/* in-section anchor (absolute inside the ScrollTrack section) */
+.anchor {
+  position: absolute;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+@keyframes presence {
+  from,
+  to {
+    visibility: visible;
+  }
+}
+
+@keyframes shiftOut {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translate3d(0, calc(var(--oshift, 0) * 1vh * var(--motion, 1)), 0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--rise, 24px) * var(--motion, 1)), 0);
+    filter: blur(calc(var(--blur, 10px) * var(--motion, 1)));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes enterSoft {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--rise, 24px) * var(--motion, 1)), 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes scrub {
+  from {
+    transform: translate3d(calc(var(--x0) * var(--motion, 1)), calc(var(--y0) * var(--motion, 1)), 0)
+      scale(calc(1 + (var(--s0) - 1) * var(--motion, 1))) rotate(calc(var(--r0) * var(--motion, 1)));
+    opacity: var(--op0);
+  }
+  to {
+    transform: translate3d(calc(var(--x1) * var(--motion, 1)), calc(var(--y1) * var(--motion, 1)), 0)
+      scale(calc(1 + (var(--s1) - 1) * var(--motion, 1))) rotate(calc(var(--r1) * var(--motion, 1)));
+    opacity: var(--op1);
+  }
+}
+
+@keyframes move {
+  from {
+    transform: translate3d(calc(var(--x0) * var(--motion, 1)), calc(var(--y0) * var(--motion, 1)), 0)
+      scale(calc(1 + (var(--s0) - 1) * var(--motion, 1))) rotate(calc(var(--r0) * var(--motion, 1)));
+  }
+  to {
+    transform: translate3d(calc(var(--x1) * var(--motion, 1)), calc(var(--y1) * var(--motion, 1)), 0)
+      scale(calc(1 + (var(--s1) - 1) * var(--motion, 1))) rotate(calc(var(--r1) * var(--motion, 1)));
+  }
+}
+
+@keyframes recede {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: scale(calc(1 - (1 - var(--rs, 0.6)) * var(--motion, 1)));
+  }
+}
+
+@keyframes draw {
+  from {
+    stroke-dashoffset: calc(100 * var(--motion, 1));
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.scrub,
+.move {
+  --x0: 0px;
+  --y0: 0px;
+  --s0: 1;
+  --r0: 0deg;
+  --op0: 1;
+  --x1: 0px;
+  --y1: 0px;
+  --s1: 1;
+  --r1: 0deg;
+  --op1: 1;
+}
+
+/* The windows the entrances / exit fades below run on (video seconds). --motion is 1 or 0,
+   so each is one of two values: full motion uses the item's --a/--b and, for the exit, the
+   window Overlay.tsx wrote for this piece (--xf0/--xf1, keeps it out of the top bar's row)
+   or else the stage's; reduced motion uses --ra/--rb and --rf0/--rf1 where given (stages
+   follow each other there instead of sliding past each other). */
+.in,
+.inSoft,
+.inout,
+.inoutSoft,
+.inoutRecede,
+.out,
+.introOut,
+.introOutSoft {
+  --ia: calc(var(--motion, 1) * var(--a, 0) + (1 - var(--motion, 1)) * var(--ra, var(--a, 0)));
+  --ib: calc(var(--motion, 1) * var(--b, 0) + (1 - var(--motion, 1)) * var(--rb, var(--b, 0)));
+  --fa: calc(var(--motion, 1) * var(--xf0, var(--f0, 0)) + (1 - var(--motion, 1)) * var(--rf0, var(--f0, 0)));
+  --fb: calc(var(--motion, 1) * var(--xf1, var(--f1, 0)) + (1 - var(--motion, 1)) * var(--rf1, var(--f1, 0)));
+}
+
+/* ------------------------------------------------------------------------ */
+/* native: CSS scroll-driven animations                                       */
+/* ------------------------------------------------------------------------ */
+
+@supports (animation-timeline: scroll()) {
+  .stage {
+    visibility: hidden;
+    animation-name: presence;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-fill-mode: var(--pfill, none);
+    animation-timeline: scroll(root block);
+    animation-range: calc(var(--p0) * 100% / var(--T)) calc(var(--p1) * 100% / var(--T));
+  }
+
+  .shift {
+    animation-name: shiftOut;
+    animation-duration: 1s;
+    animation-timing-function: var(--oease, linear);
+    animation-fill-mode: forwards;
+    animation-timeline: scroll(root block);
+    animation-range: calc(var(--o0) * 100% / var(--T)) calc(var(--o1) * 100% / var(--T));
+  }
+
+  .out {
+    animation-name: fadeOut;
+    animation-duration: 1s;
+    animation-timing-function: linear;
+    animation-fill-mode: forwards;
+    animation-timeline: scroll(root block);
+    animation-range: calc(var(--fa) * 100% / var(--T)) calc(var(--fb) * 100% / var(--T));
+  }
+
+  .in,
+  .inSoft {
+    animation-name: enter;
+    animation-duration: 1s;
+    animation-timing-function: var(--ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+    animation-fill-mode: both;
+    animation-timeline: scroll(root block);
+    animation-range: calc(var(--ia) * 100% / var(--T)) calc(var(--ib) * 100% / var(--T));
+  }
+
+  .inSoft {
+    animation-name: enterSoft;
+  }
+
+  .inout,
+  .inoutSoft {
+    animation-name: enter, fadeOut;
+    animation-duration: 1s, 1s;
+    animation-timing-function: var(--ease, cubic-bezier(0.22, 0.61, 0.36, 1)), linear;
+    animation-fill-mode: both, forwards;
+    animation-timeline: scroll(root block), scroll(root block);
+    animation-range:
+      calc(var(--ia) * 100% / var(--T)) calc(var(--ib) * 100% / var(--T)),
+      calc(var(--fa) * 100% / var(--T)) calc(var(--fb) * 100% / var(--T));
+  }
+
+  .inoutSoft {
+    animation-name: enterSoft, fadeOut;
+  }
+
+  .scrub,
+  .draw,
+  .move {
+    animation-name: scrub;
+    animation-duration: 1s;
+    animation-timing-function: var(--ease, linear);
+    animation-fill-mode: both;
+    animation-timeline: scroll(root block);
+    animation-range: calc(var(--a) * 100% / var(--T)) calc(var(--b) * 100% / var(--T));
+  }
+
+  .draw {
+    animation-name: draw;
+  }
+
+  .move {
+    animation-name: move;
+  }
+
+  .inoutRecede {
+    animation-name: enterSoft, recede;
+    animation-duration: 1s, 1s;
+    animation-timing-function: var(--ease, cubic-bezier(0.22, 0.61, 0.36, 1)), var(--rease, linear);
+    animation-fill-mode: both, forwards;
+    animation-timeline: scroll(root block), scroll(root block);
+    animation-range:
+      calc(var(--ia) * 100% / var(--T)) calc(var(--ib) * 100% / var(--T)),
+      calc(var(--fa) * 100% / var(--T)) calc(var(--fb) * 100% / var(--T));
+  }
+}
+
+/* ------------------------------------------------------------------------ */
+/* fallback: paused animations scrubbed through animation-delay by --t        */
+/* (also resets the timeline, so it can be forced with ?overlay=fallback in a  */
+/* browser that does support scroll timelines)                                */
+/* ------------------------------------------------------------------------ */
+
+:global([data-overlay-fallback]) .stage {
+  visibility: hidden;
+  animation-name: presence;
+  animation-duration: 1s;
+  animation-timing-function: linear;
+  animation-fill-mode: var(--pfill, none);
+  animation-timeline: auto;
+  animation-range: normal;
+  animation-play-state: paused;
+  animation-delay: calc((var(--p0) - var(--t, 0)) / (var(--p1) - var(--p0)) * 1s);
+}
+
+:global([data-overlay-fallback]) .shift {
+  animation-name: shiftOut;
+  animation-duration: 1s;
+  animation-timing-function: var(--oease, linear);
+  animation-fill-mode: forwards;
+  animation-timeline: auto;
+  animation-range: normal;
+  animation-play-state: paused;
+  animation-delay: calc((var(--o0) - var(--t, 0)) / (var(--o1) - var(--o0)) * 1s);
+}
+
+:global([data-overlay-fallback]) .out {
+  animation-name: fadeOut;
+  animation-duration: 1s;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-timeline: auto;
+  animation-range: normal;
+  animation-play-state: paused;
+  animation-delay: calc((var(--fa) - var(--t, 0)) / (var(--fb) - var(--fa)) * 1s);
+}
+
+:global([data-overlay-fallback]) .in,
+:global([data-overlay-fallback]) .inSoft {
+  animation-name: enter;
+  animation-duration: 1s;
+  animation-timing-function: var(--ease, cubic-bezier(0.22, 0.61, 0.36, 1));
+  animation-fill-mode: both;
+  animation-timeline: auto;
+  animation-range: normal;
+  animation-play-state: paused;
+  animation-delay: calc((var(--ia) - var(--t, 0)) / (var(--ib) - var(--ia)) * 1s);
+}
+
+:global([data-overlay-fallback]) .inSoft {
+  animation-name: enterSoft;
+}
+
+:global([data-overlay-fallback]) .inout,
+:global([data-overlay-fallback]) .inoutSoft {
+  animation-name: enter, fadeOut;
+  animation-duration: 1s, 1s;
+  animation-timing-function: var(--ease, cubic-bezier(0.22, 0.61, 0.36, 1)), linear;
+  animation-fill-mode: both, forwards;
+  animation-timeline: auto, auto;
+  animation-range: normal, normal;
+  animation-play-state: paused, paused;
+  animation-delay:
+    calc((var(--ia) - var(--t, 0)) / (var(--ib) - var(--ia)) * 1s),
+    calc((var(--fa) - var(--t, 0)) / (var(--fb) - var(--fa)) * 1s);
+}
+
+:global([data-overlay-fallback]) .inoutSoft {
+  animation-name: enterSoft, fadeOut;
+}
+
+:global([data-overlay-fallback]) .scrub,
+:global([data-overlay-fallback]) .draw,
+:global([data-overlay-fallback]) .move {
+  animation-name: scrub;
+  animation-duration: 1s;
+  animation-timing-function: var(--ease, linear);
+  animation-fill-mode: both;
+  animation-timeline: auto;
+  animation-range: normal;
+  animation-play-state: paused;
+  animation-delay: calc((var(--a) - var(--t, 0)) / (var(--b) - var(--a)) * 1s);
+}
+
+:global([data-overlay-fallback]) .draw {
+  animation-name: draw;
+}
+
+:global([data-overlay-fallback]) .move {
+  animation-name: move;
+}
+
+:global([data-overlay-fallback]) .inoutRecede {
+  animation-name: enterSoft, recede;
+  animation-duration: 1s, 1s;
+  animation-timing-function: var(--ease, cubic-bezier(0.22, 0.61, 0.36, 1)), var(--rease, linear);
+  animation-fill-mode: both, forwards;
+  animation-timeline: auto, auto;
+  animation-range: normal, normal;
+  animation-play-state: paused, paused;
+  animation-delay:
+    calc((var(--ia) - var(--t, 0)) / (var(--ib) - var(--ia)) * 1s),
+    calc((var(--fa) - var(--t, 0)) / (var(--fb) - var(--fa)) * 1s);
+}
+
+/* one-frame animation restart when the fallback switches on (Overlay.tsx) */
+:global([data-overlay-restart]) *,
+:global([data-overlay-restart]) *::before {
+  animation-name: none !important;
+}
+
+/* one-frame restart of the scroll-driven animations when --motion changes while the page is
+   open (OS setting toggled, or a late ?motion= flag): their keyframes read --motion, and a
+   running compositor animation keeps the value it started with. The one-off load intro is
+   left alone (it would replay). */
+:global([data-overlay-remotion]) :is(.shift, .out, .in, .inSoft, .inout, .inoutSoft, .inoutRecede, .scrub, .draw, .move) {
+  animation-name: none !important;
+}
+
+/* words of a headline: inline-block so they can rise individually */
+.word {
+  display: inline-block;
+}
+
+/* ------------------------------------------------------------------------ */
+/* one-off load intro (hero, time-based): --d delay, --dur, --rise, --blur,   */
+/* --iscale. .introOut / .introOutSoft = intro + the stage's scroll-driven    */
+/* exit fade on the same element (glass cards fade themselves, see the glass  */
+/* rule above).                                                                */
+/* ------------------------------------------------------------------------ */
+
+@keyframes intro {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--rise, 18px) * var(--motion, 1)), 0)
+      scale(calc(1 - (1 - var(--iscale, 1)) * var(--motion, 1)));
+    filter: blur(calc(var(--blur, 10px) * var(--motion, 1)));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes introSoft {
+  from {
+    opacity: 0;
+    transform: translate3d(0, calc(var(--rise, 18px) * var(--motion, 1)), 0)
+      scale(calc(1 - (1 - var(--iscale, 1)) * var(--motion, 1)));
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.intro,
+.introSoft,
+.introOut,
+.introOutSoft {
+  animation-name: intro;
+  animation-duration: var(--dur, 0.8s);
+  animation-timing-function: var(--iease, cubic-bezier(0.22, 0.61, 0.36, 1));
+  animation-delay: var(--d, 0s);
+  animation-fill-mode: both;
+}
+
+.introSoft,
+.introOutSoft {
+  animation-name: introSoft;
+}
+
+@supports (animation-timeline: scroll()) {
+  .introOut,
+  .introOutSoft {
+    animation-name: intro, fadeOut;
+    animation-duration: var(--dur, 0.8s), 1s;
+    animation-timing-function: var(--iease, cubic-bezier(0.22, 0.61, 0.36, 1)), linear;
+    animation-delay: var(--d, 0s), 0s;
+    animation-fill-mode: both, forwards;
+    animation-timeline: auto, scroll(root block);
+    animation-range:
+      normal,
+      calc(var(--fa) * 100% / var(--T)) calc(var(--fb) * 100% / var(--T));
+  }
+
+  .introOutSoft {
+    animation-name: introSoft, fadeOut;
+  }
+}
+
+:global([data-overlay-fallback]) .introOut,
+:global([data-overlay-fallback]) .introOutSoft {
+  animation-name: intro, fadeOut;
+  animation-duration: var(--dur, 0.8s), 1s;
+  animation-timing-function: var(--iease, cubic-bezier(0.22, 0.61, 0.36, 1)), linear;
+  animation-fill-mode: both, forwards;
+  animation-timeline: auto, auto;
+  animation-range: normal, normal;
+  animation-play-state: running, paused;
+  animation-delay:
+    var(--d, 0s),
+    calc((var(--fa) - var(--t, 0)) / (var(--fb) - var(--fa)) * 1s);
+}
+
+:global([data-overlay-fallback]) .introOutSoft {
+  animation-name: introSoft, fadeOut;
+}

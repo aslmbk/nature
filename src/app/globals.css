@@ -1,0 +1,67 @@
+:root {
+  /* page colour before the canvas paints (cold load, S2), also NatureStage's stage: the
+     hero's empty background as the engine renders it at mid-height (?t=4&layers=none
+     capture, frame centre, 1440×1020 and 375×812 alike). Its top and bottom bands run to
+     near-black (top-left pixel #010201), which the first paint should not be. */
+  --silva-bg: #5f6953;
+  --silva-fg: #e9efe0;
+  color-scheme: dark;
+
+  /* overlay tokens (src/components/overlay) */
+  --ov-fg: #e9efe0;
+  --ov-fg-strong: #f4f7ef;
+  --ov-fg-soft: rgba(233, 239, 224, 0.84);
+  --ov-fg-muted: rgba(233, 239, 224, 0.6);
+  --ov-accent: #bceb6a;
+  /* next/font sets --font-inter / --font-instrument-serif on <html> (layout.tsx) */
+  --ov-font-sans: var(--font-inter, system-ui), system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --ov-font-serif: var(--font-instrument-serif, Georgia), "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  /* legibility floor of the smallest overlay texts (product-mock labels, captions, pills):
+     their --u / --cu scaled sizes never go below it, `max(var(--ov-text-min), …)`, at every
+     viewport size */
+  --ov-text-min: 11px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background: var(--silva-bg);
+  /* the story position is derived from scrollY; never let the browser re-anchor it */
+  overflow-anchor: none;
+}
+
+body {
+  min-height: 100%;
+  color: var(--silva-fg);
+  background: var(--silva-bg);
+  font-family: var(--ov-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+a {
+  color: inherit;
+}
+
+/* capture=1: deterministic screenshots — no scrollbars, no overlay */
+html[data-nature-capture] {
+  overflow: hidden;
+  scrollbar-width: none;
+}
+
+html[data-nature-capture] body {
+  overflow: hidden;
+}
+
+html[data-nature-capture] ::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-nature-capture] [data-nature-overlay] {
+  display: none !important;
+}

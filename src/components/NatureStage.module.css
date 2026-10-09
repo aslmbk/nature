@@ -1,0 +1,111 @@
+.stage {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  /* large viewport: no resize when mobile browser bars show / hide */
+  height: 100vh;
+  height: 100lvh;
+  z-index: 0;
+  /* the page colour (globals.css --silva-bg): the hero's empty background as rendered */
+  background: var(--silva-bg);
+  pointer-events: none;
+}
+
+.host {
+  position: absolute;
+  inset: 0;
+}
+
+.host canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Without WebGL 2 (or when the engine cannot load): our own hero render (t = 0.5 s,
+   public/nature/poster.jpg), cropped to cover like the canvas. */
+.poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 50%;
+}
+
+/* Rendered into <body>, outside the stage's stacking context: above the overlay root
+   (z-index 1, top bar included). A compact two-line chip on a dark pill in the top bar's
+   row, where no copy ever sits: from 900 px centred in the free room between the logo
+   (x 40–122) and the nav pill (320 px wide in the middle, 56 px tall at y 30), as tall as
+   the "Get started" button and on the pill's centre line. The full sentence stays for
+   screen readers. */
+.message {
+  position: fixed;
+  z-index: 40;
+  top: 36px;
+  left: 138px;
+  right: calc(50% + 176px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: max-content;
+  max-width: calc(50% - 314px);
+  height: 44px;
+  margin: 0 auto;
+  padding: 0 18px;
+  border-radius: 999px;
+  background: rgba(10, 12, 9, 0.74);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  color: #f4f7ef;
+  font-family: var(--ov-font-sans);
+  font-size: 13px;
+  font-weight: 450;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.messageLong {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.messageShort {
+  display: block;
+  color: rgba(244, 247, 239, 0.72);
+}
+
+.messageShort b {
+  display: block;
+  font-weight: 600;
+  color: #f4f7ef;
+}
+
+/* Under 900 px the top bar is the logo (x 16–89) and the Menu button (100 px wide, 16 px
+   from the right edge), and the headlines start right below it: the chip sits in the free
+   room between the two, as tall as the Menu button. */
+@media (max-width: 899.98px) {
+  .message {
+    top: 16px;
+    left: 101px;
+    right: 128px;
+    max-width: calc(100vw - 229px);
+    height: 40px;
+    padding: 0 14px;
+    font-size: 11.5px;
+  }
+}
+
+@media (max-width: 359.98px) {
+  .message {
+    padding: 0 10px;
+  }
+}

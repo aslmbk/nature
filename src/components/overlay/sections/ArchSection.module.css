@@ -1,0 +1,14 @@
+/* frame 04: eyebrow line top ≈ 287 px of 1020 */
+.column {
+  top: 28.1%;
+}
+
+.column .lead {
+  max-width: clamp(300px, calc(38.8 * var(--u)), 640px);
+}
+
+@media (max-width: 699.98px) {
+  .column {
+    top: 22%;
+  }
+}

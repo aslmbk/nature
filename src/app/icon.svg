@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -60 120 120" width="64" height="64">
+  <!-- Silva "seed" emblem; paths from assets-src/emblem/seed.svg (single source) -->
+  <rect x="-60" y="-60" width="120" height="120" rx="26" fill="#2a3023"/>
+  <g fill="#e9efe0" stroke="#e9efe0" stroke-width="2" stroke-linejoin="round">
+    <path d="M12.87 -37 A62.5 62.5 0 0 0 0 -50 A62.5 62.5 0 0 0 -11.68 38.56 Z"/>
+    <path d="M17.06 -30.49 A62.5 62.5 0 0 1 0 50 A62.5 62.5 0 0 1 -7.08 43.81 Z"/>
+  </g>
+</svg>

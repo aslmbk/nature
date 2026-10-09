@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Silva emblem "the seed" — source of truth for the stone carving, the finale stone cut-outs and the UI logo.
+  Own work, 2026-10-04.
+
+  Construction (units; y up in this description, the SVG below has y down):
+    almond  = intersection of two discs of radius 62.5 centred at (-37.5, 0) and (37.5, 0)
+              -> tips at (0, 50) and (0, -50), widest points at (-25, 0) and (25, 0); width 50, height 100
+    channel = straight band 6 wide, tilted 18 degrees clockwise from vertical, centre line through (4, 0)
+    pieces  = almond minus channel: the left piece keeps the top tip, the right piece keeps the bottom tip
+    corners are rounded with radius 1 (here: round stroke joins)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -55 60 110" width="240" height="440">
+  <g fill="#e9efe0" stroke="#e9efe0" stroke-width="2" stroke-linejoin="round">
+    <path d="M12.87 -37 A62.5 62.5 0 0 0 0 -50 A62.5 62.5 0 0 0 -11.68 38.56 Z"/>
+    <path d="M17.06 -30.49 A62.5 62.5 0 0 1 0 50 A62.5 62.5 0 0 1 -7.08 43.81 Z"/>
+  </g>
+</svg>

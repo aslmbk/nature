@@ -1,0 +1,83 @@
+/* frame 16 (1440×1020): eyebrow centre y ≈ 322, three headline lines centred at
+   388 / 460 / 528 (the italic serif line runs ≈ 730 px wide), paragraph 588–640,
+   buttons 662–705, 23 px apart. */
+
+.column {
+  top: 30.8%;
+}
+
+.column .title {
+  margin-top: calc(1.5 * var(--u));
+  line-height: 1;
+}
+
+.title .big {
+  font-size: 1.14em;
+  line-height: 0.93;
+}
+
+.column .lead {
+  max-width: clamp(300px, calc(40.5 * var(--u)), 660px);
+  color: rgba(233, 239, 224, 0.9);
+}
+
+/* the small texts sit on lit leaves: a closer, darker shadow than the headline needs */
+.column .eyebrow,
+.column .lead {
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.6),
+    0 0 16px rgba(0, 0, 0, 0.55);
+}
+
+.column .buttons {
+  margin-top: calc(1.6 * var(--u));
+  gap: calc(1.6 * var(--u));
+}
+
+/* glass button: the same blur, a darker tint, so its label reads over bright leaves */
+.column .glass {
+  background: rgba(10, 13, 9, 0.42);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.column .glass:hover {
+  background: rgba(10, 13, 9, 0.56);
+}
+
+/* wide screens: the copy lies on the lit middle of the canopy; a soft dark ellipse behind
+   the whole block (shared .halo) dims the leaves there, with no edge */
+@media (min-width: 700px) {
+  .column .halo {
+    display: block;
+    --halo: 0.6;
+    --halo-w: calc(76 * var(--u));
+    --halo-y: 30%;
+    --halo-y2: 34%;
+  }
+}
+
+@media (min-width: 700px) and (max-width: 899.98px) {
+  .column .halo {
+    --halo-w: 118%;
+  }
+}
+
+/* phones: the canopy fills the middle of the frame (≈ 23–79 % of the height), so the
+   column splits around it: eyebrow + statement at the top, paragraph + buttons below the
+   leaves on black (DOM and reading order unchanged). On short phones the paragraph still
+   reaches the lower leaves: the shared scrim (a soft halo) sits behind it. */
+@media (max-width: 699.98px) {
+  .column {
+    top: 12%;
+    bottom: 3.5%;
+  }
+
+  .column .lead {
+    position: relative;
+    margin-top: auto;
+  }
+
+  .column .buttons {
+    gap: 10px;
+  }
+}

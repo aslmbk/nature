@@ -1,0 +1,38 @@
+/* frame 08 (1440×1020): eyebrow centre y ≈ 177, headline 212–345, orb 390–720,
+   paragraph 740–808 (3 lines, ≈ 430 px wide), CTA 831–875. */
+
+.top {
+  position: absolute;
+  inset: 0;
+}
+
+.column {
+  top: 16.6%;
+}
+
+.column .title {
+  margin-top: calc(1.05 * var(--u));
+}
+
+.bottom {
+  top: 72.3%;
+}
+
+.lead {
+  max-width: clamp(290px, calc(31 * var(--u)), 520px);
+}
+
+.cta {
+  margin-top: calc(1.55 * var(--u));
+}
+
+@media (max-width: 699.98px) {
+  .column {
+    top: 13%;
+  }
+
+  .bottom {
+    top: auto;
+    bottom: 5%;
+  }
+}

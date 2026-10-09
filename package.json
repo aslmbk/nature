@@ -1,0 +1,30 @@
+{
+  "name": "silva-nature",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3000",
+    "build": "next build",
+    "start": "next start --port 3000",
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "capture": "node tools/capture.mjs"
+  },
+  "dependencies": {
+    "lil-gui": "0.21.0",
+    "next": "16.3.8",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "three": "0.186.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/three": "0.186.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.3.8",
+    "playwright-core": "1.63.0",
+    "typescript": "^5"
+  }
+}
